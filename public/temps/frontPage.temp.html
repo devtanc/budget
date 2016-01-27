@@ -1,0 +1,36 @@
+<div id="header" class="centered">
+	<span class="text">Budget Calculator</span>
+</div>
+<div class="well centered">
+	<form class="form-inline">
+		<div class="form-group">
+			<label class="sr-only" for="exampleInputAmount">Last paycheck date: </label>
+			<div class="input-group">
+				<div class="input-group-addon">Last paycheck date: </div>
+				<input type="date" class="form-control" id="paycheck-date" ng-model="paycheckDate">
+				<div class="btn btn-success input-group-addon" style="color:#fff" ng-click="calculate()">Submit</div>
+			</div>
+		</div>
+	</form>
+<!--	<div id="remaining">Net Pay: <span>{{netPay | currency:"$"}}</span></div>-->
+	<div id="remaining">Remaining: <span>{{(netPay - total) | currency:"$"}}</span></div>
+</div>
+<table class="table table-striped top-space">
+	<caption>Expenses This Pay Period</caption>
+	<thead>
+		<tr>
+			<th>Amount</th>
+			<th>Day</th>
+			<th>Purpose</th>
+			<th>Payee</th>
+		</tr>
+	</thead>
+	<tbody class="text-muted">
+		<tr ng-repeat="expense in expenses | orderBy:'day_of_month'">
+			<td>{{expense.amount | currency:"$"}}</td>
+			<td>{{expense.day_of_month}}</td>
+			<td>{{expense.purpose}}</td>
+			<td>{{expense.payee}}</td>
+		</tr>
+	</tbody>
+</table>

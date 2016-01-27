@@ -1,0 +1,25 @@
+{
+	"name": "budget-app",
+	"version": "1.0.0",
+	"description": "",
+	"main": "budget-server.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"postinstall": "config-envy all get",
+		"start": "node budget-server.js"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"body-parser": "^1.14.2",
+		"config-envy": "^0.1.1",
+		"express": "^4.13.3",
+		"request": "^2.67.0"
+	},
+	"devDependencies": {
+		"grunt": "^0.4.5",
+		"grunt-contrib-concat": "^0.5.1",
+		"grunt-contrib-uglify": "^0.11.0",
+		"grunt-ng-annotate": "^1.0.1"
+	}
+}

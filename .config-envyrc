@@ -1,0 +1,20 @@
+{
+	"projectName": "budget",
+	"storage": "s3",
+	"defaults": {
+		"env": "{laneKey}",
+		"local": "config/{laneKey}.env",
+		"bucket": "com.quizitive.net",
+		"region": "us-west-2",
+		"key": "{projectName}/env/{laneKey}.env"
+	},
+	"lanes": {
+		"production": {
+			"env": "production"
+		},
+		"development": {
+			"env": "development"
+		},
+		"development": {} // This just uses the default config
+	}
+}
