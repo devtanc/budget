@@ -128,8 +128,9 @@ budgetApp.controller('FrontPageController', ['$scope', '$location', 'couchReq', 
 			expenseList['one-off'].forEach(function(expense) {
 				var expenseDate = new Date(expense.date);
 				if(payPeriodStart.valueOf() < expenseDate.valueOf() &&
-					 expenseDate.valueOf() < payPeriodEnd.valueOf()) {
-					$scope.expenses.push(expense);
+					expenseDate.valueOf() < payPeriodEnd.valueOf()) {
+						expense.day_of_month = expenseDate.getDate();
+						$scope.expenses.push(expense);
 				}
 			});
 		}
