@@ -135,24 +135,24 @@ budgetApp.controller('FrontPageController', ['$scope', '$location', 'couchReq', 
 
 	function checkDayOfMonth(sameMonth, day, payPeriodStart, payPeriodEnd, dayOfWeek) {
 		if(sameMonth) {
-			if(day > payPeriodStart.getDate() &&
-				 day < payPeriodEnd.getDate()) {
+			if(day >= payPeriodStart.getDate() &&
+				 day <= payPeriodEnd.getDate()) {
 				return true;
 			}
 		} else {
 			if (typeof dayOfWeek === 'undefined') {
-				if ((day > payPeriodStart.getDate() &&
-						 day < payPeriodStart.getDays()) ||
-						 day < payPeriodEnd.getDate()) {
+				if ((day >= payPeriodStart.getDate() &&
+						 day <= payPeriodStart.getDays()) ||
+						 day <= payPeriodEnd.getDate()) {
 					return true;
 				}
 			} else {
 				var startDayOfWeek = new Date(payPeriodStart.getFullYear(), payPeriodStart.getMonth(), day).getDay();
 				var endDayOfWeek = new Date(payPeriodEnd.getFullYear(), payPeriodEnd.getMonth(), day).getDay();
-				if ((day > payPeriodStart.getDate() &&
-						 day < payPeriodStart.getDays() &&
+				if ((day >= payPeriodStart.getDate() &&
+						 day <= payPeriodStart.getDays() &&
 						 dayOfWeek == startDayOfWeek) ||
-						 day < payPeriodEnd.getDate() &&
+						 day <= payPeriodEnd.getDate() &&
 						 dayOfWeek == endDayOfWeek) {
 					return true;
 				}
