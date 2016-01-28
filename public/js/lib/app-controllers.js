@@ -26,12 +26,11 @@ budgetApp.controller('FrontPageController', ['$scope', '$location', 'couchReq', 
 			if(res.length) {
 				res = res[0].value;
 				$scope.storedPayPeriod = res;
-				setDate();
+				$scope.paycheckDate = new Date($scope.storedPayPeriod.lastPayPeriodStart);
+				$scope.calculate();
 			}
 		});
 	});
-
-
 
 	$scope.calculate = function() {
 		$scope.expenses = [];
@@ -50,12 +49,6 @@ budgetApp.controller('FrontPageController', ['$scope', '$location', 'couchReq', 
 			}).then(function(res) {
 				console.log(res);
 				$scope.storedPayPeriod._id = res.id;
-				$scope.storedPayPeriod._rev = res.rev;
-			});
-		} else {
-			$scope.storedPayPeriod.lastPayPeriodStart = payPeriodStart.toISOString();
-			$scope.storedPayPeriod.lastPayPeriodEnd = payPeriodEnd.toISOString();
-			couchReq.update($scope.storedPayPeriod).then(function(res) {
 				$scope.storedPayPeriod._rev = res.rev;
 			});
 		}
@@ -166,18 +159,5 @@ budgetApp.controller('FrontPageController', ['$scope', '$location', 'couchReq', 
 			}
 		}
 		return false;
-	}
-
-	function setDate() {
-		var today = new Date();
-		var start = new Date($scope.storedPayPeriod.lastPayPeriodStart);
-		var end = new Date($scope.storedPayPeriod.lastPayPeriodEnd);
-		var next = new Date(end.valueOf() + oneDayInMS);
-		if (today.valueOf() < next.valueOf()) {
-			$scope.paycheckDate = start;
-		} else {
-			$scope.paycheckDate = next;
-		}
-		$scope.calculate();
 	}
 }]);

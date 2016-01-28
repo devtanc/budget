@@ -1,17 +1,39 @@
-/* global require, process, __dirname */
-
+/* global require, process, __dirname, setInterval, setTimeout */
 require('config-envy')({
-	env: process.env.NODE_ENV,
+	env: process.env.NODE_ENV  || 'development',
 	cwd: process.cwd(),
 	localEnv: '.env',
 	overrideProcess: false,
 	silent: false,
 });
+require('winston-loggly');
 
 var express = require('express');
 var request = require('request');
 var bodyParser = require('body-parser');
+var payChecker = require('./paycheckDate.js');
+var logger = require('./logger.js');
 var app = express();
+
+var currentHour = new Date().getHours();
+var TIMEOUT = 0;
+if (currentHour <= 7 &&
+	 currentHour >= 6) {
+	TIMEOUT = 0;
+} else if (currentHour < 6) {
+	TIMEOUT = (6 - currentHour) * 3600000;
+} else {
+	TIMEOUT = (24 - currentHour + 6) * 3600000;
+}
+
+logger.log('info', 'Timeout for first run of checker function: ' +
+					 TIMEOUT + 'ms (or ' + (TIMEOUT / 1000 / 60 / 60) + ' hours)');
+
+setTimeout(function() {
+	payChecker();
+	setInterval(payChecker, process.env.PAY_CHECKER_TIMEOUT);
+}, TIMEOUT);
+
 
 var PORT_NUMBER = process.env.PORT_NUMBER || 3030;
 
@@ -30,7 +52,7 @@ var couchConfig = {
 };
 
 app.post('/api/get', function(req, res) { //Gets item from db
-	console.log('API GET request received');
+	logger.log('API GET request received', req);
 	//Parse queryParams into query parameters on the url
 	var builtUri = couchConfig.db + '/_design/views/_view/' + req.body.view;
 	if (req.body.queryParams) {
@@ -43,7 +65,7 @@ app.post('/api/get', function(req, res) { //Gets item from db
 			}
 		});
 	}
-	console.log(builtUri);
+	logger.log('URI built: ' + builtUri);
 	//Send GET request with constructed URL
 	request.get({
 		baseUrl: couchConfig.baseUrl,
@@ -67,7 +89,7 @@ app.post('/api/get', function(req, res) { //Gets item from db
 });
 
 app.post('/api', function(req, res) { //Creates new items in couchdb
-	console.log('API POST request received');
+	logger.log('API POST request received', req);
 	request.post({
 		baseUrl: couchConfig.baseUrl,
 		uri: couchConfig.db,
@@ -76,14 +98,13 @@ app.post('/api', function(req, res) { //Creates new items in couchdb
 	}, function(err, response, body) {
 		if (err) { console.log(err); }
 		else {
-			console.log(body);
 			res.status(200).json(body);
 		}
 	});
 });
 
 app.put('/api', function(req, res) { //Modifies items in couchdb
-	console.log('API PUT request received');
+	logger.log('API PUT request received', req);
 	var _id = req.body._id;
 	delete req.body._id;
 	var _rev = req.body._rev;
@@ -99,12 +120,11 @@ app.put('/api', function(req, res) { //Modifies items in couchdb
 	}, function(err, response, body) {
 		if (err) { console.log(err); }
 		else {
-			console.log(body);
 			res.status(200).json(body);
 		}
 	});
 });
 
 app.listen(PORT_NUMBER, function() {
-	console.log('Listening on port: ' + PORT_NUMBER);
+	logger.log('info', 'Listening on port: ' + PORT_NUMBER);
 });
