@@ -35,7 +35,7 @@ setTimeout(function() {
 }, TIMEOUT);
 
 
-var PORT_NUMBER = process.env.PORT_NUMBER || 3030;
+var PORT_NUMBER = process.env.PORT || 3030;
 
 app.use(bodyParser.json());
 
