@@ -18,7 +18,7 @@ module.exports = new (winston.Logger)({
 				name: 'Loggly',
 				token: process.env.LOGGLY_TOKEN,
 				subdomain: "devtanc",
-				tags: ["Budget-Server"],
+				tags: ["Budget-Server", process.env.LOGGLY_ENV_TAG],
 				json:true,
 				colorize:'all'
 			})
