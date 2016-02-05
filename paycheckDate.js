@@ -3,8 +3,11 @@ var twoWeeksInMS = 1209600000;
 var oneDayInMS = 86400000;
 var request = require('request');
 var logger = require('./logger.js');
+var payChecker = {
+	isNewPaycheck: false
+};
 
-module.exports = function payChecker() {
+payChecker.checkDate = function() {
 	var today = new Date();
 	logger.log("info", "Today's day of the month: " + today.getDate());
 	request(process.env.DB_BASE_URL + '/regular_payments/_design/views/_view/lastPayPeriod', function(err, res, body) {
@@ -15,9 +18,11 @@ module.exports = function payChecker() {
 			var next = new Date(start.valueOf() + twoWeeksInMS);
 			if(today.getDate() == next.getDate()) {
 				logger.log('info', 'It\'s a new Pay Period! Time to update!');
+				payChecker.isNewPaycheck = true;
 				updatePaycheck(next, body);
 			} else {
 				logger.log('info', 'Not a new pay period yet...');
+				payChecker.isNewPaycheck = false;
 			}
 		} else {
 			logger.error(err);
@@ -46,3 +51,5 @@ function updatePaycheck(next, old) {
 		}
 	});
 }
+
+module.exports = payChecker;

@@ -1,0 +1,12 @@
+{
+	"name": "Budgeter",
+	"icons": [
+		{
+			"src": "BudgetAppIcon.png",
+			"sizes": "128x128",
+			"type": "image/png"
+		}
+	],
+	"start_url": "http://syn.christensen.local:20001",
+	"display": "standalone"
+}

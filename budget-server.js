@@ -6,6 +6,7 @@ require('config-envy')({
 	overrideProcess: false,
 	silent: false,
 });
+console.log('Running in ' + (process.env.NODE_ENV || 'development') + ' mode');
 require('winston-loggly');
 
 var express = require('express');
@@ -14,6 +15,10 @@ var bodyParser = require('body-parser');
 var payChecker = require('./paycheckDate.js');
 var logger = require('./logger.js');
 var app = express();
+var couchConfig = {
+	baseUrl: process.env.DB_BASE_URL + '/',
+	db: 'regular_payments'
+};
 
 var currentHour = new Date().getHours();
 var TIMEOUT = 0;
@@ -21,17 +26,20 @@ if (currentHour <= 7 &&
 	 currentHour >= 6) {
 	TIMEOUT = 0;
 } else if (currentHour < 6) {
-	TIMEOUT = (6 - currentHour) * 3600000;
+	TIMEOUT = (6 - currentHour) * 60 * 60 * 1000;
 } else {
-	TIMEOUT = (24 - currentHour + 6) * 3600000;
+	TIMEOUT = (24 - currentHour + 6) * 60 * 60 * 1000;
 }
 
 logger.log('info', 'Timeout for first run of checker function: ' +
 					 TIMEOUT + 'ms (or ' + (TIMEOUT / 1000 / 60 / 60) + ' hours)');
 
+calculateRemaining();
 setTimeout(function() {
-	payChecker();
-	setInterval(payChecker, process.env.PAY_CHECKER_TIMEOUT);
+	payChecker.checkDate();
+	setInterval(payChecker.checkDate, process.env.PAY_CHECKER_TIMEOUT);
+	setTimeout(calculateRemaining, 30000);
+	setInterval(calculateRemaining, (process.env.PAY_CHECKER_TIMEOUT + 30000));
 }, TIMEOUT);
 
 
@@ -46,11 +54,6 @@ app.get('/', function(req,res) {
 });
 
 //API endpoints
-var couchConfig = {
-	baseUrl: process.env.DB_BASE_URL + '/',
-	db: 'regular_payments'
-};
-
 app.post('/api/get', function(req, res) { //Gets item from db
 	logger.log('API GET request received', req);
 	//Parse queryParams into query parameters on the url
@@ -124,6 +127,37 @@ app.put('/api', function(req, res) { //Modifies items in couchdb
 		}
 	});
 });
+
+function calculateRemaining() {
+	var expenses = getExpenseList();
+	//Do calculations here
+}
+
+function getExpenseList() {
+	var expenseList = {};
+	request.get({
+		baseUrl: couchConfig.baseUrl,
+		uri: couchConfig.db + '/_design/views/_view/recurrence',
+		json: true
+	}, function(err, response, body) {
+		if (err) {
+			console.log(err);
+		}
+		else {
+			if(body.error) {
+				throw body.error;
+			} else {
+				body.rows.map(function (element) {
+					if(!expenseList[element.key]) {
+						expenseList[element.key] = [];
+					}
+					expenseList[element.key].push(element.value);
+				});
+				return expenseList;
+			}
+		}
+	});
+}
 
 app.listen(PORT_NUMBER, function() {
 	logger.log('info', 'Listening on port: ' + PORT_NUMBER);
