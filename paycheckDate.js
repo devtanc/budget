@@ -9,7 +9,7 @@ var payChecker = {
 
 payChecker.checkDate = function() {
 	var today = new Date();
-	logger.log("info", "Today's day of the month: " + today.getDate());
+	logger.info("Today's day of the month: " + today.getDate());
 	request(process.env.DB_BASE_URL + '/regular_payments/_design/views/_view/lastPayPeriod', function(err, res, body) {
 		if (!err) {
 			logger.debug(body);
@@ -17,11 +17,11 @@ payChecker.checkDate = function() {
 			var start = new Date(body.lastPayPeriodStart);
 			var next = new Date(start.valueOf() + twoWeeksInMS);
 			if(today.getDate() == next.getDate()) {
-				logger.log('info', 'It\'s a new Pay Period! Time to update!');
+				logger.info("It's a new Pay Period! Time to update!");
 				payChecker.isNewPaycheck = true;
 				updatePaycheck(next, body);
 			} else {
-				logger.log('info', 'Not a new pay period yet...');
+				logger.info("Not a new pay period yet...");
 				payChecker.isNewPaycheck = false;
 			}
 		} else {

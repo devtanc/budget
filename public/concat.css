@@ -62,3 +62,7 @@ table caption {
 .nav-bar {
 	background-color: lightblue;
 }
+
+.pointer:hover {
+	cursor: pointer;
+}

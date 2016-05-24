@@ -1,0 +1,28 @@
+<div class="pull-right pointer" ng-click="goTo('/')">Home</div>
+<table class="table table-striped top-space">
+	<caption>Expenses</caption>
+	<thead>
+		<tr>
+			<th>Amount</th>
+			<th>Recurrence</th>
+			<th>Month</th>
+			<th>Day of Month</th>
+			<th>Day of Week</th>
+			<th>Which</th>
+			<th>Purpose</th>
+			<th>Payee</th>
+		</tr>
+	</thead>
+	<tbody class="text-muted">
+		<tr class="pointer" ng-repeat="expense in expenses | orderBy:'day_of_month'" ng-click="goTo('edit', expense.recurrence, expense.creationDate)">
+			<td>{{expense.amount | currency:"$"}}</td>
+			<td>{{expense.recurrence}}</td>
+			<td>{{expense.month}}</td>
+			<td>{{expense.day_of_month}}</td>
+			<td>{{expense.day_of_week}}</td>
+			<td>{{expense.which}}</td>
+			<td>{{expense.purpose}}</td>
+			<td>{{expense.payee}}</td>
+		</tr>
+	</tbody>
+</table>

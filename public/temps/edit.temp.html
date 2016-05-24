@@ -1,0 +1,13 @@
+<div class="centered h1">Edit Expense</div>
+<form class="form-horizontal">
+	<div class="form-group" ng-repeat="(key, value) in expense">
+		<label class="col-sm-2 control-label">{{key}}</label>
+		<div class="col-sm-10">
+			<input type="text" class="form-control" ng-model="value" ng-disabled="key === 'creationDate' || key === 'recurrence'">
+		</div>
+	</div>
+</form>
+<div class="well center-block" style="max-width:400px">
+	<button type="button" class="btn btn-success btn-lg btn-block">Save Expense</button>
+	<button type="button" class="btn btn-danger btn-lg btn-block">DELETE Expense</button>
+</div>
