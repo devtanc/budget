@@ -8,8 +8,11 @@ angular.module('budgetApp', ['ngRoute'])
 	}).when('/viewAll', {
 		templateUrl: '/temps/all.temp.html',
 		controller: 'ViewAllPageController'
-	}).when('/edit/:recurrence/:createdDate', {
+	}).when('/edit/:recurrence/:creationDate', {
 		templateUrl: '/temps/edit.temp.html',
 		controller: 'EditPageController'
+	}).when('/createNew', {
+		templateUrl: '/temps/new.temp.html',
+		controller: 'CreationController'
 	});
 });
