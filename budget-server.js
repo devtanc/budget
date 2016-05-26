@@ -18,7 +18,7 @@ var CronJob = require('cron').CronJob;
 new CronJob({
 	cronTime: '00 00 08 * * 5',
 	onTick: function() {
-		console.log('Starting Job!'); //ADD CALCULATION FUNCTION HERE
+		console.log('Ran CronJob HAHA!! Time is:', new Date().toISOString()); //ADD CALCULATION FUNCTION HERE
 	},
 	start: true,
 	timeZone: 'America/Denver',

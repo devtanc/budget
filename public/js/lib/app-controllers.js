@@ -1,17 +1,17 @@
 /* global angular, _ */
 var budgetApp = angular.module('budgetApp');
 
-budgetApp.controller('FrontPageController', ['$scope', '$location', '$http', function($scope, $location, $http) {
+budgetApp.controller('FrontPageController', ['$scope', '$location', 'expensesService', function($scope, $location, expensesService) {
 	$scope.goTo = function(path) {
 		$location.path(path);
 	};
 
-	$http.get('/api/getAllExpenses').then(function(res) {
-		$scope.expenses = res.data;
+	expensesService.refreshExpenses().then(function(expenses) {
+		$scope.expenses = expenses;
 	});
 }]);
 
-budgetApp.controller('ViewAllPageController', ['$scope', '$location', '$http', function($scope, $location, $http) {
+budgetApp.controller('ViewAllPageController', ['$scope', '$location', 'expensesService', function($scope, $location, expensesService) {
 	$scope.goTo = function(path, recurrence, creationDate) {
 		if(path === 'edit') {
 			$location.path(path + '/' + recurrence + '/' + encodeURIComponent(creationDate));
@@ -20,12 +20,12 @@ budgetApp.controller('ViewAllPageController', ['$scope', '$location', '$http', f
 		}
 	};
 
-	$http.get('/api/getAllExpenses').then(function(res) {
-		$scope.expenses = res.data;
+	expensesService.getExpenses().then(function(expenses) {
+		$scope.expenses = expenses;
 	});
 }]);
 
-budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$routeParams', function($scope, $location, $http, $routeParams) {
+budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$routeParams', 'expensesService', function($scope, $location, $http, $routeParams, expensesService) {
 	var recurrence = $routeParams.recurrence;
 	var creationDate = $routeParams.creationDate;
 
@@ -33,164 +33,59 @@ budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$ro
 		$location.path(path);
 	};
 
-	$http.get('/api/getExpense/' + recurrence + '/' + creationDate).then(function(res) {
-		$scope.expense = res.data.Item || null;
+	expensesService.getExpense(recurrence, decodeURIComponent(creationDate)).then(function(expense) {
+		$scope.expense = expense || null;
 	}).catch(function(err) {
 		console.error(err);
 	});
+
+	$scope.deleteExpense = function() {
+		$http({
+			method: 'DELETE',
+			url: '/api/deleteExpense',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			data: {
+				primary: recurrence,
+				secondary: decodeURIComponent(creationDate)
+			}
+		}).then(function() {
+			$scope.goTo('/');
+		}).catch(function(err) {
+			console.error(err);
+		});
+	};
+
+	$scope.updateExpense = function() {
+		$http({
+			method: 'POST',
+			url: '/api/updateExpense',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			data: $scope.expense
+		}).then(function() {
+			$scope.goTo('/');
+		}).catch(function(err) {
+			console.error(err);
+		});
+	};
 }]);
 
-budgetApp.controller('CreationController', ['$scope', '$location', '$http', function($scope, $location, $http) {
+budgetApp.controller('CreationController', ['$scope', '$location', '$http', 'schemas', function($scope, $location, $http, schemas) {
 	$scope.recurrence = undefined;
+	var monthNumbers = schemas.getSchema('monthNumbers');
+	var weekdayNumbers = schemas.getSchema('weekdayNumbers');
+	$scope.globalFields = schemas.getSchema('globalFields');
+	$scope.recurrenceTypes = schemas.getSchema('recurrenceTypes');
 
 	$scope.goTo = function(path) {
 		$location.path(path);
 	};
 
-	var monthNumbers = {
-		January:0,
-		February:1,
-		March:2,
-		April:3,
-		May:4,
-		June:5,
-		July:6,
-		August:7,
-		September:8,
-		October:9,
-		November:10,
-		December:11
-	};
-
-	var weekdayNumbers = {
-		Sunday: 0,
-		Monday: 1,
-		Tuesday: 2,
-		Wednesday: 3,
-		Thursday: 4,
-		Friday: 5,
-		Saturday: 6,
-	};
-
-	$scope.globalFields = [
-		{
-			name:'amount',
-			type: 'number',
-			step: '0.01',
-			value: undefined
-		},
-		{
-			name:'payee',
-			type: 'text',
-			value: undefined
-		},
-		{
-			name:'purpose',
-			type: 'text',
-			value: undefined
-		}
-	];
-
-	$scope.recurrenceTypes = [
-		{
-			name:'paycheck',
-			fields: []
-		},
-		{
-			name:'monthly',
-			fields: [
-				{
-					name:'day_of_month',
-					type: 'number',
-					step: '1',
-					value: undefined
-				}
-			]
-		},
-		{
-			name:'monthly-on',
-			fields: [
-				{
-					name:'day_of_week',
-					options: [
-						'Monday',
-						'Tuesday',
-						'Wednesday',
-						'Thursday',
-						'Friday',
-						'Saturday',
-						'Sunday'
-					],
-					value: undefined
-				},
-				{
-					name:'numerical_day_of_week',
-					hidden: true,
-					value: undefined
-				},
-				{
-					name:'which',
-					type: 'number',
-					step: '1',
-					value: undefined
-				}
-			]
-		},
-		{
-			name:'yearly',
-			fields: [
-				{
-					name:'day_of_month',
-					type: 'number',
-					step: '1',
-					value: undefined
-				},
-				{
-					name:'month',
-					options: [
-						'January',
-						'February',
-						'March',
-						'April',
-						'May',
-						'June',
-						'July',
-						'August',
-						'September',
-						'October',
-						'November',
-						'December'
-					],
-					value: undefined
-				},
-				{
-					name:'numerical_month',
-					hidden: true,
-					value: undefined
-				}
-			]
-		},
-		{
-			name:'one-off',
-			fields: [
-				{
-					name:'date',
-					type: 'date',
-					value: undefined
-				},
-				{
-					name:'paid',
-					type: 'checkbox',
-					value: false
-				}
-			]
-		}
-	];
-
 	$scope.updateFields = function(recurrence) {
-		$scope.calculatedFields = _.find($scope.recurrenceTypes, function(type) {
-			return type.name === recurrence;
-		});
+		$scope.calculatedFields = schemas.getCalculatedFields(recurrence);
 	};
 
 	$scope.saveExpense = function() {

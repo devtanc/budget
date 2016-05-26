@@ -18,8 +18,8 @@ module.exports = function(server) {
 	server.post('/api/createExpense', function(req, res) {
 		dynamo.put({
 			Item: req.body
-		}).then(function(data) {
-			logger.info('New item expense added to dynamo: ' + data);
+		}).then(function() {
+			logger.info('New item expense added to dynamo: ' + JSON.stringify(req.body));
 			res.sendStatus(200);
 		}).catch(function(err) {
 			logger.error(err);
@@ -28,13 +28,23 @@ module.exports = function(server) {
 	});
 
 	server.post('/api/updateExpense', function(req, res) {
-		//May already have?
-		res.sendStatus(200);
+		dynamo.update(req.body).then(function(data) {
+			logger.info('Expense updated' + JSON.stringify(data));
+			res.status(200).json(data).end();
+		}).catch(function(err) {
+			logger.error(err);
+			res.status(500).json(err).end();
+		});
 	});
 
-	server.post('/api/deleteExpense', function(req, res) {
-		//May already have? Use DELETE method instead?
-		res.sendStatus(200);
+	server.delete('/api/deleteExpense', function(req, res) {
+		dynamo.delete(req.body.primary, req.body.secondary).then(function() {
+			logger.info('Item deleted: [' + req.body.primary + ', ' + req.body.secondary + ']');
+			res.status(200).end();
+		}).catch(function(err) {
+			logger.error(err);
+			res.status(500).json(err).end();
+		});
 	});
 
 	server.get('/api/getExpensesThisPayPeriod', function(req, res) {
@@ -42,13 +52,14 @@ module.exports = function(server) {
 		res.sendStatus(200);
 	});
 
-	server.get('/api/getAllExpenses/:recurrance', function(req, res) {
-		var recurrance = req.params.recurrance;
+	server.get('/api/getAllExpenses/:recurrence', function(req, res) {
+		var recurrence = req.params.recurrence;
 		res.sendStatus(200);
 	});
 
 	server.get('/api/getAllExpenses', function(req, res) {
 		dynamo.queryAll().then(function(data) {
+			logger.info('Retrieved all [' + data.length + '] expenses');
 			res.status(200).json(data).end();
 		}).catch(function(err) {
 			logger.error(err);
@@ -58,6 +69,7 @@ module.exports = function(server) {
 
 	server.get('/api/getExpense/:recurrence/:creationDate', function(req, res) {
 		dynamo.get(req.params.recurrence, req.params.creationDate).then(function(data) {
+			logger.info('Retrieved expense: ' + JSON.stringify(data));
 			res.status(200).json(data).end();
 		}).catch(function(err) {
 			logger.error(err);
