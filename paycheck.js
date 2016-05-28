@@ -13,5 +13,5 @@ module.exports.getPaycheck = function(date) {
 			start: closestPaycheckDate,
 			end: moment(closestPaycheckDate).add(14, 'days').format(paychecks.format)
 		};
-	} else { throw 'Invalid date format. Must follow the format  m"' + paychecks.format + '"'; }
+	} else { throw 'Invalid date format. Must follow the format "' + paychecks.format + '"'; }
 };

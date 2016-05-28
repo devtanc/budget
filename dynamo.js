@@ -12,9 +12,9 @@ var dynamoLib = {};
 var docClient = new AWS.DynamoDB.DocumentClient();
 var _table = 'budget-payments';
 
-dynamoLib.queryAll = function(tableName, type) {
+dynamoLib.queryAll = function(type) {
 	var deferred = q.defer();
-	var options = { TableName: tableName || _table };
+	var options = { TableName: _table };
 	if(type) {
 		options.FilterExpression = 'recurrance = :type';
 		options.ExpressionAttributeValues = { ':type': type };
