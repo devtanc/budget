@@ -7,3 +7,4 @@
 /public/styles
 /public/js/min/min-safe
 /config/*.env
+*.log

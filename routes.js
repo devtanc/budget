@@ -2,7 +2,7 @@
 var logger = require('./logger.js').getLogger;
 var dynamo = require('./dynamo.js');
 var moment = require('moment');
-var expenses = require('expenses.js');
+var expenses = require('./expenses.js');
 var format = 'YYYY-MM-DD';
 
 module.exports = function(server) {
