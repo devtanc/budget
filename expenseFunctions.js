@@ -36,14 +36,22 @@ module.exports['monthly'] = function(expense, paycheck) {
 };
 
 module.exports['yearly'] = function(expense, paycheck) {
-	var year = moment().year();
-	var dueDateThisYear = moment(year + expense.month + expense.day_of_month, 'YYYYMMMMD');
-	//WHAT ABOUT ON PAYCHECKS THAT SPAN YEARS?
-	if(dueDateThisYear.isBetween(paycheck.start, paycheck.end, null, '[)')) {
-		expense.dueDate = dueDateThisYear.format(format);
-		expense.displayDate = dueDateThisYear.format(displayFormat);
+	var startYear = moment(paycheck.start).year();
+	var endYear = moment(paycheck.end).year();
+	var dueDate_StartYear = moment(startYear + expense.month + expense.day_of_month, 'YYYYMMMMD');
+	var dueDate_EndYear = moment(endYear + expense.month + expense.day_of_month, 'YYYYMMMMD');
+	if(dueDate_StartYear.isBetween(paycheck.start, paycheck.end, null, '[)')) {
+		expense.dueDate = dueDate_StartYear.format(format);
+		expense.displayDate = dueDate_StartYear.format(displayFormat);
 		expense.past = moment(expense.dueDate).isBefore(moment());
 		return true;
+	} else if(startYear !== endYear) {
+		if(dueDate_EndYear.isBetween(paycheck.start, paycheck.end, null, '[)')) {
+			expense.dueDate = dueDate_EndYear.format(format);
+			expense.displayDate = dueDate_EndYear.format(displayFormat);
+			expense.past = moment(expense.dueDate).isBefore(moment());
+			return true;
+		}
 	}
 	return false;
 };
