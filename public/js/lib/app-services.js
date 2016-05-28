@@ -1,4 +1,4 @@
-/* global angular, _ */
+/* global angular, _, moment */
 var budgetApp = angular.module('budgetApp');
 
 budgetApp.service('expensesService', [ '$http', '$q', function($http, $q) {
@@ -14,6 +14,20 @@ budgetApp.service('expensesService', [ '$http', '$q', function($http, $q) {
 	this.getExpenses = function() {
 		if(!service.expenses) { return service.refreshExpenses(); }
 		return $q.when(service.expenses);
+	};
+
+	this.getFilteredExpenses = function(date) {
+		if(!date) {
+			return $http.get('/api/getExpensesThisPaycheck').then(function(res) {
+				return res.data;
+			});
+		} else if(/\d{4}-\d{2}-\d{2}/.test(date)) {
+			return $http.get('/api/getExpensesStarting/' + date).then(function(res) {
+				return res.data;
+			});
+		} else {
+			return $q.reject('Invalid date format. Must follow the format YYYY-MM-DD');
+		}
 	};
 
 	this.getExpense = function(primary, secondary, recursive) {

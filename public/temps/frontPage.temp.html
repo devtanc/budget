@@ -9,8 +9,8 @@
 			<label class="sr-only" for="exampleInputAmount">Last paycheck date: </label>
 			<div class="input-group">
 				<div class="input-group-addon">Last paycheck date: </div>
-				<input type="date" class="form-control" id="paycheck-date" ng-model="paycheckDate">
-				<div class="btn btn-success input-group-addon" style="color:#fff" ng-click="calculate()">Submit</div>
+				<input type="date" class="form-control" id="paycheck-date" ng-model="paycheckDate" ng-change="updatePaycheck()">
+<!--				<div class="btn btn-success input-group-addon" style="color:#fff" ng-click="calculate()">Submit</div>-->
 			</div>
 		</div>
 	</form>
@@ -28,9 +28,9 @@
 		</tr>
 	</thead>
 	<tbody class="text-muted">
-		<tr ng-repeat="expense in expenses | orderBy:'day_of_month'">
+		<tr ng-repeat="expense in expenses | orderBy:'dueDate'" ng-class="{ 'faded' : expense.past}">
 			<td>{{expense.amount | currency:"$"}}</td>
-			<td>{{expense.day_of_month}}</td>
+			<td>{{expense.displayDate}}</td>
 			<td>{{expense.purpose}}</td>
 			<td>{{expense.payee}}</td>
 		</tr>

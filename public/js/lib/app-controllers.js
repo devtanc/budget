@@ -1,4 +1,4 @@
-/* global angular, _ */
+/* global angular, _, moment */
 var budgetApp = angular.module('budgetApp');
 
 budgetApp.controller('FrontPageController', ['$scope', '$location', 'expensesService', function($scope, $location, expensesService) {
@@ -6,9 +6,19 @@ budgetApp.controller('FrontPageController', ['$scope', '$location', 'expensesSer
 		$location.path(path);
 	};
 
-	expensesService.refreshExpenses().then(function(expenses) {
-		$scope.expenses = expenses;
+	expensesService.refreshExpenses().then(function() {
+		expensesService.getFilteredExpenses().then(function(expenses) {
+			$scope.expenses = expenses;
+			console.log(expenses);
+		});
 	});
+
+	$scope.updatePaycheck = function() {
+		var formattedDate = moment($scope.paycheckDate).format('YYYY-MM-DD');
+		expensesService.getFilteredExpenses(formattedDate).then(function(expenses) {
+			$scope.expenses = expenses;
+		});
+	};
 }]);
 
 budgetApp.controller('ViewAllPageController', ['$scope', '$location', 'expensesService', function($scope, $location, expensesService) {
@@ -51,7 +61,9 @@ budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$ro
 				secondary: decodeURIComponent(creationDate)
 			}
 		}).then(function() {
-			$scope.goTo('/');
+			expensesService.refreshExpenses().then(function() {
+				$scope.goTo('/viewAll');
+			});
 		}).catch(function(err) {
 			console.error(err);
 		});
@@ -66,7 +78,9 @@ budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$ro
 			},
 			data: $scope.expense
 		}).then(function() {
-			$scope.goTo('/');
+			expensesService.refreshExpenses().then(function() {
+				$scope.goTo('/viewAll');
+			});
 		}).catch(function(err) {
 			console.error(err);
 		});

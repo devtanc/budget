@@ -1,16 +1,21 @@
 /* global module, require*/
 var moment = require('moment');
 var format = 'YYYY-MM-DD';
+var displayFormat = 'MMM D';
 
-module.exports['paycheck'] = function() {
+module.exports['paycheck'] = function(expense, paycheck) {
+	expense.dueDate = moment(paycheck.start).format(format); //Want these to have a day of the paycheck they usually go through
+	expense.displayDate = moment(paycheck.start).format(displayFormat);
+	expense.past = moment(expense.dueDate).isBefore(moment());
 	return true; //Happens every paycheck
 };
 
 module.exports['one-off'] = function(expense, paycheck) {
 	var dueDate = moment(expense.date);
-	console.log(dueDate.format(format), paycheck.start.format(format), paycheck.end.format(format));
 	if(dueDate.isBetween(paycheck.start, paycheck.end, null, '[)')) {
 		expense.dueDate = dueDate.format(format);
+		expense.displayDate = dueDate.format(displayFormat);
+		expense.past = moment(expense.dueDate).isBefore(moment());
 		return true;
 	}
 	return false;
@@ -21,6 +26,8 @@ module.exports['monthly'] = function(expense, paycheck) {
 	while(compareDate.isBefore(paycheck.end)) {
 		if(compareDate.date() == expense.day_of_month) {
 			expense.dueDate = compareDate.format(format);
+			expense.displayDate = compareDate.format(displayFormat);
+			expense.past = moment(expense.dueDate).isBefore(moment());
 			return true;
 		}
 		compareDate.add(1, 'day');
@@ -30,9 +37,12 @@ module.exports['monthly'] = function(expense, paycheck) {
 
 module.exports['yearly'] = function(expense, paycheck) {
 	var year = moment().year();
-	var nextDueDate = moment(year + expense.month + expense.day_of_month, 'YYYYMMMMD');
-	if(nextDueDate.isBetween(paycheck.start, paycheck.end, null, '[)')) {
-		expense.dueDate = nextDueDate.format(format);
+	var dueDateThisYear = moment(year + expense.month + expense.day_of_month, 'YYYYMMMMD');
+	//WHAT ABOUT ON PAYCHECKS THAT SPAN YEARS?
+	if(dueDateThisYear.isBetween(paycheck.start, paycheck.end, null, '[)')) {
+		expense.dueDate = dueDateThisYear.format(format);
+		expense.displayDate = dueDateThisYear.format(displayFormat);
+		expense.past = moment(expense.dueDate).isBefore(moment());
 		return true;
 	}
 	return false;
@@ -49,6 +59,8 @@ module.exports['monthly-on'] = function(expense, paycheck) {
 				if(count == expense.which) {
 					if(monthDay.isBetween(paycheck.start, paycheck.end, null, '[)')) {
 						expense.dueDate = monthDay.format('YYYY-MM-DD');
+						expense.displayDate = monthDay.format(displayFormat);
+						expense.past = moment(expense.dueDate).isBefore(moment());
 						return true;
 					}
 					return false;
@@ -65,6 +77,8 @@ module.exports['monthly-on'] = function(expense, paycheck) {
 				if(count == expense.which) {
 					if(monthDay.isBetween(paycheck.start, paycheck.end, null, '[)')) {
 						expense.dueDate = monthDay.format('YYYY-MM-DD');
+						expense.displayDate = monthDay.format(displayFormat);
+						expense.past = moment(expense.dueDate).isBefore(moment());
 						return true;
 					}
 					monthDay.add(1, 'month').date(0);
@@ -79,6 +93,8 @@ module.exports['monthly-on'] = function(expense, paycheck) {
 				if(count == expense.which) {
 					if(monthDay.isBetween(paycheck.start, paycheck.end, null, '[)')) {
 						expense.dueDate = monthDay.format('YYYY-MM-DD');
+						expense.displayDate = monthDay.format(displayFormat);
+						expense.past = moment(expense.dueDate).isBefore(moment());
 						return true;
 					}
 					return false;

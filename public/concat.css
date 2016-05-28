@@ -66,3 +66,7 @@ table caption {
 .pointer:hover {
 	cursor: pointer;
 }
+
+.faded {
+	color: #B5B5B5;
+}

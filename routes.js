@@ -3,6 +3,7 @@ var logger = require('./logger.js').getLogger;
 var dynamo = require('./dynamo.js');
 var moment = require('moment');
 var expenses = require('./expenses.js');
+var paycheck = require('./paycheck.js');
 var format = 'YYYY-MM-DD';
 
 module.exports = function(server) {
@@ -13,10 +14,11 @@ module.exports = function(server) {
 	});
 
 	server.get('/api/getExpensesThisPaycheck', function(req, res) {
-		res.redirect('/api/getExpensesStarting/' + moment().format(format));
+		var thisPaycheck = paycheck.getPaycheck(moment().format(format));
+		res.redirect('/api/getExpensesStarting/' + thisPaycheck.start);
 	});
 
-	server.post('/api/getExpensesStarting/:date', function(req, res) {
+	server.get('/api/getExpensesStarting/:date', function(req, res) {
 		var date = moment(req.params.date, format);
 		expenses.getFilteredExpenses({
 			start: date,
