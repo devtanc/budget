@@ -19,6 +19,7 @@
     "express": "^4.13.3",
     "moment": "^2.13.0",
     "promise": "^7.1.1",
+    "q": "^1.4.1",
     "request": "^2.67.0",
     "twilio": "^3.3.0-edge",
     "winston": "^2.1.1",
