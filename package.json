@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.3.16",
     "bluebird": "^3.4.0",
     "body-parser": "^1.14.2",
     "config-envy": "^0.1.1",
