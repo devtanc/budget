@@ -6,16 +6,28 @@
 <div class="well centered">
 	<form class="form-inline">
 		<div class="form-group">
-			<label class="sr-only" for="exampleInputAmount">Last paycheck date: </label>
+			<label class="sr-only">Last paycheck date: </label>
 			<div class="input-group">
 				<div class="input-group-addon">Last paycheck date: </div>
-				<input type="date" class="form-control" id="paycheck-date" ng-model="paycheckDate" ng-change="updatePaycheck()">
-<!--				<div class="btn btn-success input-group-addon" style="color:#fff" ng-click="calculate()">Submit</div>-->
+				<input type="date" class="form-control" id="paycheck-date" ng-model="paycheckStart" ng-change="updatePaycheck()">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="sr-only">Net pay received: </label>
+			<div class="input-group">
+				<div class="input-group-addon">Net pay received: </div>
+				<input type="number" step="0.01" class="form-control" id="netPay" ng-model="netPay">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="sr-only">Remaning from prev paycheck: </label>
+			<div class="input-group">
+				<div class="input-group-addon">Remaning from prev paycheck: </div>
+				<input type="number" step="0.01" class="form-control" id="remainingPay" ng-model="remainingPay" ng-change="recalculateTotal()">
 			</div>
 		</div>
 	</form>
-<!--	<div id="remaining">Net Pay: <span>{{netPay | currency:"$"}}</span></div>-->
-	<div id="remaining">Remaining: <span>{{(netPay - total) | currency:"$"}}</span></div>
+	<div id="remaining">Remaining: <span>{{(netPay - total) < 0 ? 0 : (netPay - total) | currency:"$"}}</span></div>
 </div>
 <table class="table table-striped top-space">
 	<caption>Expenses This Pay Period</caption>

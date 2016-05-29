@@ -10,22 +10,26 @@ module.exports = function(server) {
 	server.get('/api/txt', function(req, res) {
 		//Unused currently. Needs to be exposed to the web for use.
 		//This endpoint would handle texts FROM users to the budget app
-		res.sendStatus(200);
+		res.sendStatus(404);
 	});
 
-	server.get('/api/getExpensesThisPaycheck', function(req, res) {
+	server.get('/api/getExpensesThisPaycheck', function(req, res) { //Add paycheck info
 		var thisPaycheck = paycheck.getPaycheck(moment().format(format));
 		res.redirect('/api/getExpensesStarting/' + thisPaycheck.start);
 	});
 
-	server.get('/api/getExpensesStarting/:date', function(req, res) {
+	server.get('/api/getExpensesStarting/:date', function(req, res) { //Add paycheck info
 		var date = moment(req.params.date, format);
 		expenses.getFilteredExpenses({
 			start: date,
 			end: moment(date).add(14, 'days')
 		}).then(function(data) {
 			logger.info('Returned [' + data.length + '] expenses starting: ' + date.format('YYYY-MM-DD'));
-			res.status(200).json(data).end();
+			res.status(200).json({
+				expenses: data,
+				paycheckStart: date,
+				paycheckEnd: moment(date).add(14, 'days')
+			}).end();
 		}).catch(function(err) {
 			logger.error(err);
 			res.status(500).json(err).end();

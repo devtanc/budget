@@ -2,22 +2,37 @@
 var budgetApp = angular.module('budgetApp');
 
 budgetApp.controller('FrontPageController', ['$scope', '$location', 'expensesService', function($scope, $location, expensesService) {
+	$scope.remainingPay = 0;
+	$scope.netPay = 900; //Default netPay amount
+
 	$scope.goTo = function(path) {
 		$location.path(path);
 	};
 
 	expensesService.refreshExpenses().then(function() {
-		expensesService.getFilteredExpenses().then(function(expenses) {
-			$scope.expenses = expenses;
-			console.log(expenses);
+		expensesService.getFilteredExpenses().then(function(expenseData) {
+			$scope.expenses = expenseData.expenses;
+			$scope.paycheckStart = new Date(expenseData.paycheckStart);
+			$scope.paycheckEnd = new Date(expenseData.paycheckEnd);
+			$scope.recalculateTotal();
 		});
 	});
 
 	$scope.updatePaycheck = function() {
-		var formattedDate = moment($scope.paycheckDate).format('YYYY-MM-DD');
-		expensesService.getFilteredExpenses(formattedDate).then(function(expenses) {
-			$scope.expenses = expenses;
+		var formattedDate = moment($scope.paycheckStart).format('YYYY-MM-DD');
+		expensesService.getFilteredExpenses(formattedDate).then(function(expenseData) {
+			$scope.expenses = expenseData.expenses;
+			$scope.paycheckStart = expenseData.paycheckStart;
+			$scope.paycheckEnd = expenseData.paycheckEnd;
+			$scope.recalculateTotal();
 		});
+	};
+
+	$scope.recalculateTotal = function() {
+		$scope.total = $scope.expenses.reduce(function(prev, current) {
+			return prev + parseFloat(current.amount);
+		}, parseFloat($scope.expenses[0].amount));
+		$scope.total += $scope.remainingPay;
 	};
 }]);
 
@@ -35,7 +50,7 @@ budgetApp.controller('ViewAllPageController', ['$scope', '$location', 'expensesS
 	});
 }]);
 
-budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$routeParams', 'expensesService', function($scope, $location, $http, $routeParams, expensesService) {
+budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$routeParams', 'expensesService', 'schemas', function($scope, $location, $http, $routeParams, expensesService, schemas) {
 	var recurrence = $routeParams.recurrence;
 	var creationDate = $routeParams.creationDate;
 
@@ -43,11 +58,19 @@ budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$ro
 		$location.path(path);
 	};
 
+	$scope.globalFields = schemas.getSchema('globalFields');
+	$scope.recurrenceTypes = schemas.getSchema('recurrenceTypes');
+	$scope.calculatedFields = schemas.getCalculatedFields(recurrence);
+
 	expensesService.getExpense(recurrence, decodeURIComponent(creationDate)).then(function(expense) {
 		$scope.expense = expense || null;
 	}).catch(function(err) {
 		console.error(err);
 	});
+
+	$scope.updateFields = function() {
+		$scope.calculatedFields = schemas.getCalculatedFields($scope.expense.recurrence);
+	};
 
 	$scope.deleteExpense = function() {
 		$http({
@@ -70,27 +93,50 @@ budgetApp.controller('EditPageController', ['$scope', '$location', '$http', '$ro
 	};
 
 	$scope.updateExpense = function() {
-		$http({
-			method: 'POST',
-			url: '/api/updateExpense',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			data: $scope.expense
-		}).then(function() {
-			expensesService.refreshExpenses().then(function() {
-				$scope.goTo('/viewAll');
+		if(recurrence !== $scope.expense.recurrence) {
+			var finalObj = {
+				recurrence: $scope.expense.recurrence,
+				creationDate: creationDate
+			};
+			$scope.globalFields.forEach(function(field) {
+				finalObj[field.name] = $scope.expense[field.name];
 			});
-		}).catch(function(err) {
-			console.error(err);
-		});
+			$scope.calculatedFields.fields.forEach(function(field) {
+				finalObj[field.name] = $scope.expense[field.name];
+			});
+			$http({
+				method: 'POST',
+				url: '/api/createExpense',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				data: finalObj
+			}).then(function() {
+				$scope.deleteExpense();
+			}).catch(function(err) {
+				console.error(err);
+			});
+		} else {
+			$http({
+				method: 'POST',
+				url: '/api/updateExpense',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				data: $scope.expense
+			}).then(function() {
+				expensesService.refreshExpenses().then(function() {
+					$scope.goTo('/viewAll');
+				});
+			}).catch(function(err) {
+				console.error(err);
+			});
+		}
 	};
 }]);
 
 budgetApp.controller('CreationController', ['$scope', '$location', '$http', 'schemas', function($scope, $location, $http, schemas) {
 	$scope.recurrence = undefined;
-	var monthNumbers = schemas.getSchema('monthNumbers');
-	var weekdayNumbers = schemas.getSchema('weekdayNumbers');
 	$scope.globalFields = schemas.getSchema('globalFields');
 	$scope.recurrenceTypes = schemas.getSchema('recurrenceTypes');
 
@@ -111,18 +157,6 @@ budgetApp.controller('CreationController', ['$scope', '$location', '$http', 'sch
 			finalObj[field.name] = field.value;
 		});
 		$scope.calculatedFields.fields.forEach(function(field) {
-			var numerical;
-			if(field.name === 'day_of_week') {
-				numerical = _.find($scope.calculatedFields.fields, function(field) {
-					return field.name === 'numerical_day_of_week';
-				});
-				numerical.value = weekdayNumbers[field.value];
-			} else if(field.name === 'month') {
-				numerical = _.find($scope.calculatedFields.fields, function(field) {
-					return field.name === 'numerical_month';
-				});
-				numerical.value = monthNumbers[field.value];
-			}
 			finalObj[field.name] = field.value;
 		});
 
