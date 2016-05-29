@@ -32,7 +32,7 @@ budgetApp.controller('FrontPageController', ['$scope', '$location', 'expensesSer
 		$scope.total = $scope.expenses.reduce(function(prev, current) {
 			return prev + parseFloat(current.amount);
 		}, parseFloat($scope.expenses[0].amount));
-		$scope.total += $scope.remainingPay;
+		$scope.total -= $scope.remainingPay;
 	};
 }]);
 
