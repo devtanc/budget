@@ -4,6 +4,7 @@ var dynamo = require('./dynamo.js');
 var moment = require('moment');
 var expenses = require('./expenses.js');
 var paycheck = require('./paycheck.js');
+var auth = require('basic-auth');
 var format = 'YYYY-MM-DD';
 
 module.exports = function(server) {
@@ -97,5 +98,14 @@ module.exports = function(server) {
 			logger.error(err);
 			res.status(500).json(err).end();
 		});
+	});
+
+	server.post('/api/pebbleEndpoint', function(req, res) {
+		var creds = auth(req);
+		if(!creds || creds.name !== 'pebble' || creds.pass !== process.env.PEBBLE_ENDPOINT_SECRET) {
+			res.status(500).end();
+		} else {
+			res.status(201).json(req.body).end();
+		}
 	});
 };
