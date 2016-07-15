@@ -20,6 +20,7 @@ module.exports.getFilteredExpenses = function(paycheck) {
 	return new Promise(function(resolve, reject) {
 		dynamo.queryAll().then(function(expenses) {
 			var expenseList = expenses.filter(function(expense) {
+				if(expense.recurrence === 'system') return false;
 				return expenseFunctions[expense.recurrence](expense, paycheck);
 			});
 			resolve(expenseList);
