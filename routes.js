@@ -1,16 +1,18 @@
 /* global module, require */
-var logger = require('./logger.js').getLogger;
-var dynamo = require('./dynamo.js');
-var moment = require('moment');
-var expenses = require('./expenses.js');
-var paycheck = require('./paycheck.js');
-var auth = require('basic-auth');
+var logger 		= require('./logger.js').getLogger;
+var dynamo 		= require('./dynamo.js');
+var moment 		= require('moment');
+var expenses 	= require('./expenses.js');
+var paycheck 	= require('./paycheck.js');
+var auth 		= require('basic-auth');
+var fs 			= require('fs');
+
 var format = 'YYYY-MM-DD';
+var payFile = 'paycheck.txt';
 
 module.exports = function(server) {
 	server.get('/api/txt', function(req, res) {
-		//Unused currently. Needs to be exposed to the web for use.
-		//This endpoint would handle texts FROM users to the budget app
+		//Unused currently. This endpoint would handle texts FROM users to the budget app
 		res.sendStatus(404);
 	});
 
@@ -100,15 +102,31 @@ module.exports = function(server) {
 		});
 	});
 
+	server.get('/api/actualPay', function(req, res) {
+		fs.readFile(payFile, 'utf8', function(err, data) {
+			if (err) {
+				logger.error(err);
+				res.status(500).json({message: 'Error reading paycheck file', err: err}).end();
+			}
+			else {
+				logger.info(data);
+				res.status(200).json(JSON.parse(data)).end();
+			}
+		});
+	});
+
 	server.post('/api/pebbleEndpoint', function(req, res) {
 		var creds = auth(req);
 		if(!creds || creds.name !== 'pebble' || creds.pass !== process.env.PEBBLE_ENDPOINT_PASSWORD) {
 			logger.error(creds);
 			res.status(401).json(creds).end();
 		} else {
-			logger.info("Updating current paycheck actual amounts");
-			logger.info(req.body);
-			//Need to update amounts
+			logger.info("Updating current paycheck actual amounts: " + JSON.stringify(req.body));
+			req.body.date = moment().toISOString();
+			fs.writeFile(payFile, JSON.stringify(req.body), 'utf8', function(err) {
+				if(err) res.status(500).json({message: 'Error writing to paycheck file', err: err}).end();
+				else logger.info('Paycheck file updated');
+			});
 			res.status(201).json(req.body).end();
 		}
 	});
