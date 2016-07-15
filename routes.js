@@ -102,16 +102,6 @@ module.exports = function(server) {
 		});
 	});
 
-	server.get('/api/actualPay', function(req, res) {
-		dynamo.get('system', 'paycheck-actuals').then(function(data) {
-			logger.info('Returning paycheck actuals');
-			res.status(200).json(data).end();
-		}).catch(function(err) {
-			logger.error(err);
-			res.status(500).json(err).end();
-		});
-	});
-
 	server.post('/api/pebbleEndpoint', function(req, res) {
 		var creds = auth(req);
 		if(!creds || creds.name !== 'pebble' || creds.pass !== process.env.PEBBLE_ENDPOINT_PASSWORD) {

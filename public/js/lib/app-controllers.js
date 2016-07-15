@@ -1,10 +1,7 @@
 /* global angular, _, moment */
 var budgetApp = angular.module('budgetApp');
 
-budgetApp.controller('FrontPageController', ['$scope', '$location', 'expensesService', function($scope, $location, expensesService) {
-	$scope.remainingPay = 0;
-	$scope.netPay = 900; //Default netPay amount
-
+budgetApp.controller('FrontPageController', ['$scope', '$location', '$http', 'expensesService', function($scope, $location, http, expensesService) {
 	$scope.goTo = function(path) {
 		$location.path(path);
 	};
@@ -14,7 +11,11 @@ budgetApp.controller('FrontPageController', ['$scope', '$location', 'expensesSer
 			$scope.expenses = expenseData.expenses;
 			$scope.paycheckStart = new Date(expenseData.paycheckStart);
 			$scope.paycheckEnd = new Date(expenseData.paycheckEnd);
-			$scope.recalculateTotal();
+			$http.get('/api/getExpense/system/paycheck-actuals').then(function(res) {
+				$scope.remainingPay = res.data.Item.leftoverAmt;
+				$scope.netPay = res.data.Item.paycheckAmt;
+				$scope.recalculateTotal();
+			});
 		});
 	});
 
