@@ -122,7 +122,7 @@ module.exports = function(server) {
 			
 			req.body.date = moment().toISOString();
 			req.body.recurrence = 'system';
-			req.body.createdDate = 'paycheck-actuals';
+			req.body.creationDate = 'paycheck-actuals';
 
 			dynamo.update(req.body).then(function(data) {
 				logger.info('Paycheck actuals updated');
