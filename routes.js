@@ -106,6 +106,9 @@ module.exports = function(server) {
 			logger.error(creds);
 			res.status(401).json(creds).end();
 		} else {
+			logger.info("Updating current paycheck actual amounts");
+			logger.info(req.body);
+			//Need to update amounts
 			res.status(201).json(req.body).end();
 		}
 	});
