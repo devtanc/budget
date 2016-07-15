@@ -102,9 +102,8 @@ module.exports = function(server) {
 
 	server.post('/api/pebbleEndpoint', function(req, res) {
 		var creds = auth(req);
-		if(!creds || creds.name !== 'pebble' || creds.pass !== process.env.PEBBLE_ENDPOINT_SECRET) {
+		if(!creds || creds.name !== 'pebble' || creds.pass !== process.env.PEBBLE_ENDPOINT_PASSWORD) {
 			logger.error(creds);
-			logger.error(JSON.stringify(creds));
 			res.status(500).json(creds).end();
 		} else {
 			res.status(201).json(req.body).end();
