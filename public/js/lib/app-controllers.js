@@ -1,7 +1,7 @@
 /* global angular, _, moment */
 var budgetApp = angular.module('budgetApp');
 
-budgetApp.controller('FrontPageController', ['$scope', '$location', '$http', 'expensesService', function($scope, $location, http, expensesService) {
+budgetApp.controller('FrontPageController', ['$scope', '$location', '$http', 'expensesService', function($scope, $location, $http, expensesService) {
 	$scope.goTo = function(path) {
 		$location.path(path);
 	};
