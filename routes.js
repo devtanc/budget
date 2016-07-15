@@ -106,7 +106,7 @@ module.exports = function(server) {
 		fs.readFile(payFile, 'utf8', function(err, data) {
 			if (err) {
 				logger.error(err);
-				res.status(500).json({message: 'Error reading paycheck file', err: err}).end();
+				res.status(500).json(err).end();
 			}
 			else {
 				logger.info(data);
@@ -121,13 +121,18 @@ module.exports = function(server) {
 			logger.error(creds);
 			res.status(401).json(creds).end();
 		} else {
-			logger.info("Updating current paycheck actual amounts: " + JSON.stringify(req.body));
+			logger.info('Updating current paycheck actual amounts: ' + JSON.stringify(req.body));
 			req.body.date = moment().toISOString();
 			fs.writeFile(payFile, JSON.stringify(req.body), 'utf8', function(err) {
-				if(err) res.status(500).json({message: 'Error writing to paycheck file', err: err}).end();
-				else logger.info('Paycheck file updated');
+				if (err) {
+					logger.error(err);
+					res.status(500).json(err).end();
+				} else {
+					logger.info('Paycheck file updated successfully');
+					res.status(201).json(req.body).end();
+				}
 			});
-			res.status(201).json(req.body).end();
+			
 		}
 	});
 };
