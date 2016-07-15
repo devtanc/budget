@@ -104,7 +104,7 @@ module.exports = function(server) {
 		var creds = auth(req);
 		if(!creds || creds.name !== 'pebble' || creds.pass !== process.env.PEBBLE_ENDPOINT_PASSWORD) {
 			logger.error(creds);
-			res.status(500).json(creds).end();
+			res.status(401).json(creds).end();
 		} else {
 			res.status(201).json(req.body).end();
 		}
