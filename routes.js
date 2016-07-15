@@ -103,15 +103,12 @@ module.exports = function(server) {
 	});
 
 	server.get('/api/actualPay', function(req, res) {
-		fs.readFile(payFile, 'utf8', function(err, data) {
-			if (err) {
-				logger.error(err);
-				res.status(500).json(err).end();
-			}
-			else {
-				logger.info(data);
-				res.status(200).json(JSON.parse(data)).end();
-			}
+		dynamo.get('system', 'paycheck-actuals').then(function(data) {
+			logger.info('Returning paycheck actuals');
+			res.status(200).json(data).end();
+		}).catch(function(err) {
+			logger.error(err);
+			res.status(500).json(err).end();
 		});
 	});
 
@@ -122,17 +119,18 @@ module.exports = function(server) {
 			res.status(401).json(creds).end();
 		} else {
 			logger.info('Updating current paycheck actual amounts: ' + JSON.stringify(req.body));
-			req.body.date = moment().toISOString();
-			fs.writeFile(payFile, JSON.stringify(req.body), 'utf8', function(err) {
-				if (err) {
-					logger.error(err);
-					res.status(500).json(err).end();
-				} else {
-					logger.info('Paycheck file updated successfully');
-					res.status(201).json(req.body).end();
-				}
-			});
 			
+			req.body.date = moment().toISOString();
+			req.body.recurrence = 'system';
+			req.body.createdDate = 'paycheck-actuals';
+
+			dynamo.update(req.body).then(function(data) {
+				logger.info('Paycheck actuals updated');
+				res.status(200).json(data).end();
+			}).catch(function(err) {
+				logger.error(err);
+				res.status(500).json(err).end();
+			});
 		}
 	});
 };
