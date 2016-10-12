@@ -8,3 +8,4 @@
 /public/js/min/min-safe
 /config/*.env
 *.log
+.DS_Store
