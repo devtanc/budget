@@ -11,8 +11,8 @@ require('winston-loggly');
 
 var express = require('express');
 var bodyParser = require('body-parser');
-var logger = require('./logger.js').getLogger;
-var twilio = require('./twilio.js');
+var logger = require('./server/logger.js').getLogger;
+var twilio = require('./server/twilio.js');
 var CronJob = require('cron').CronJob;
 
 new CronJob({
@@ -36,7 +36,7 @@ app.get('/', function(req,res) {
 });
 
 //Add API endpoints
-require('./routes.js')(app);
+require('./server/routes.js')(app);
 
 var PORT_NUMBER = process.env.PORT || 3030;
 app.listen(PORT_NUMBER, function() {
