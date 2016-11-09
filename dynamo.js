@@ -10,7 +10,7 @@ AWS.config.update({
 var dynamoLib = {};
 
 var docClient = new AWS.DynamoDB.DocumentClient();
-var _table = 'budget-payments';
+var _table = process.env.NODE_ENV === 'production' ? 'budget-payments' : 'budget-payments-stage';
 
 dynamoLib.queryAll = function(type) {
 	var deferred = q.defer();
